@@ -11,7 +11,8 @@ import threading
 
 colormap = {
     "ocean_blue": "#0077B6",
-    "grass_green": "#4CAF50"
+    "grass_green": "#4CAF50",
+    "monkey": "#8B4513"
 }
 
 ikkuna = tk.Tk()
@@ -36,6 +37,15 @@ class Island:
 
     def draw(self):
         self.canvas.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill=self.color)
+        self.generate_small_squares()
+
+    def generate_small_squares(self):
+        for _ in range(10):
+            small_square_width = random.randint(2, 2)
+            small_square_x = random.randint(self.x, self.x + self.width - small_square_width)
+            small_square_y = random.randint(self.y, self.y + self.height - small_square_width)
+            self.canvas.create_rectangle(small_square_x, small_square_y, small_square_x + small_square_width,
+                                         small_square_y + small_square_width, fill=colormap["monkey"])
 
 
 def i_suppose_i_have_earned_so_much_points(amount_of_points):
