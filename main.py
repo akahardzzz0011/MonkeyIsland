@@ -34,10 +34,22 @@ class Island:
         self.y = random.randint(0, window_height - self.height)
         self.color = colormap["grass_green"]
         self.canvas = canvas
+        self.sound_thread = None
 
     def draw(self):
         self.canvas.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill=self.color)
         self.generate_small_squares()
+        self.start_sound_timer()
+
+    def sound_timer(self):
+        while True:
+            time.sleep(10)
+            playsound("sounds/monkey_noise.wav")
+
+    def start_sound_timer(self):
+        if self.sound_thread is None:
+            self.sound_thread = threading.Thread(target=self.sound_timer)
+            self.sound_thread.start()
 
     def generate_small_squares(self):
         for _ in range(10):
