@@ -145,6 +145,7 @@ def check_collision(islands, new_island):
             return True
     return False
 
+
 def one_percent_probability():
     random_number = random.random()
     if random_number <= 0.01:
@@ -155,6 +156,8 @@ def one_percent_probability():
 
 def check_monkey_position():
     for island in islands:
+        island.monkeys = [monkey for monkey in island.monkeys if not monkey.is_dead]
+
         for monkey in island.monkeys:
             if island.is_monkey_in_island(monkey):
                 monkey.island_death_timer_counter += 1
@@ -162,13 +165,15 @@ def check_monkey_position():
                     if one_percent_probability():
                         monkey.death_type = "land"
                         monkey.death_sound_thread.start()
+                        monkey.stop_death_thread()
+                        canvas.delete(monkey.shape)
                     monkey.island_death_timer_counter = 0
             else:
                 if one_percent_probability():
                     monkey.death_type = "sea"
                     monkey.death_sound_thread.start()
-            if monkey.is_dead:
-                island.monkeys.remove(monkey)
+                    monkey.stop_death_thread()
+                    canvas.delete(monkey.shape)
     canvas.after(1000, check_monkey_position)
 
 
