@@ -26,6 +26,19 @@ point_button = []
 islands = []
 
 
+class Monkey:
+    def __init__(self, canvas, x, y, size):
+        self.x = x
+        self.y = y
+        self.size = size
+        self.canvas = canvas
+
+    def draw(self):
+        self.canvas.create_rectangle(
+            self.x, self.y, self.x + self.size, self.y + self.size, fill=colormap["monkey"]
+        )
+
+
 class Island:
     def __init__(self, canvas):
         self.width = random.randint(50, 80)
@@ -39,8 +52,8 @@ class Island:
 
     def draw(self):
         self.canvas.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill=self.color)
-        self.generate_small_squares()
-        self.sound_thread.start()
+        self.generate_monkeys()
+        # self.sound_thread.start()
 
     def stop_thread(self):
         self.flag.set()
@@ -50,13 +63,16 @@ class Island:
             time.sleep(10)
             playsound("sounds/monkey_noise.wav")
 
-    def generate_small_squares(self):
+    def generate_monkeys(self):
+        monkeys = []
         for _ in range(10):
             small_square_width = random.randint(2, 2)
             small_square_x = random.randint(self.x, self.x + self.width - small_square_width)
             small_square_y = random.randint(self.y, self.y + self.height - small_square_width)
-            self.canvas.create_rectangle(small_square_x, small_square_y, small_square_x + small_square_width,
-                                         small_square_y + small_square_width, fill=colormap["monkey"])
+            monkey = Monkey(self.canvas, small_square_x, small_square_y, small_square_width)
+            monkey.draw()
+            monkeys.append(monkey)
+        return monkeys
 
 
 def i_suppose_i_have_earned_so_much_points(amount_of_points):
