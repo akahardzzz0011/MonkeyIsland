@@ -87,6 +87,7 @@ class Island:
         self.canvas = canvas
         self.sound_thread = threading.Thread(target=self.sound_timer)
         self.flag = threading.Event()
+        self.monkey_label_amount = None
         self.monkeys = []
 
     def draw(self):
@@ -99,9 +100,22 @@ class Island:
         )
         self.generate_monkeys()
         self.sound_thread.start()
+        self.update_monkey_label()
 
     def stop_thread(self):
         self.flag.set()
+
+    def update_monkey_label(self):
+        if self.monkey_label_amount:
+            self.canvas.delete(self.monkey_label_amount)
+
+        monkey_count = len(self.monkeys)
+        self.monkey_label_amount = self.canvas.create_text(
+            self.label_x, self.label_y + 20,
+            text=f"{monkey_count}",
+            fill="black",
+            font=("Arial", 12)
+        )
 
     def sound_timer(self):
         while not self.flag.is_set():
@@ -165,7 +179,7 @@ def one_percent_probability():
 def check_monkey_position():
     for island in islands:
         island.monkeys = [monkey for monkey in island.monkeys if not monkey.is_dead]
-
+        island.update_monkey_label()
         for monkey in island.monkeys:
             if island.is_monkey_in_island(monkey):
                 monkey.island_death_timer_counter += 1
