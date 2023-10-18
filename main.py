@@ -55,7 +55,6 @@ class Monkey:
                 time.sleep(5)
                 self.stop_death_thread()
 
-
     def draw(self):
         self.shape = self.canvas.create_rectangle(
             self.x, self.y, self.x + self.size, self.y + self.size, fill=colormap["monkey"]
@@ -71,16 +70,19 @@ class Monkey:
         if 0 <= new_x < window_width - self.size and 0 <= new_y < window_height - self.size:
             self.canvas.move(self.shape, dx * self.size, dy * self.size)
 
-        # Schedule the next wandering step
         self.canvas.after(self.wander_interval, self.wander)
 
 
 class Island:
     def __init__(self, canvas):
+        self.label_name = f"S{len(islands) + 1}"
+        self.label_id = None
         self.width = random.randint(50, 80)
         self.height = random.randint(50, 80)
         self.x = random.randint(0, window_width - self.width)
         self.y = random.randint(0, window_height - self.height)
+        self.label_x = self.x + self.width // 2
+        self.label_y = self.y + self.height // 2
         self.color = colormap["grass_green"]
         self.canvas = canvas
         self.sound_thread = threading.Thread(target=self.sound_timer)
@@ -89,6 +91,12 @@ class Island:
 
     def draw(self):
         self.canvas.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill=self.color)
+        self.label_id = self.canvas.create_text(
+            self.label_x, self.label_y,
+            text=self.label_name,
+            fill="black",
+            font=("Arial", 12)
+        )
         self.generate_monkeys()
         self.sound_thread.start()
 
@@ -174,6 +182,8 @@ def check_monkey_position():
                     monkey.death_sound_thread.start()
                     monkey.stop_death_thread()
                     canvas.delete(monkey.shape)
+                   # i_suppose_i_have_earned_so_much_points(2)
+
     canvas.after(1000, check_monkey_position)
 
 
@@ -192,6 +202,7 @@ def clear_islands():
     for island in islands:
         island.stop_thread()
     islands.clear()
+    # i_suppose_i_have_earned_so_much_points(1)
 
 
 for i in range(5):
