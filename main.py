@@ -32,11 +32,25 @@ class Monkey:
         self.y = y
         self.size = size
         self.canvas = canvas
+        self.wander_interval= 1000
 
     def draw(self):
-        self.canvas.create_rectangle(
+        self.shape = self.canvas.create_rectangle(
             self.x, self.y, self.x + self.size, self.y + self.size, fill=colormap["monkey"]
         )
+        self.wander()
+
+    def wander(self):
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]  # Right, Left, Down, Up
+        dx, dy = random.choice(directions)
+        new_x = self.x + dx * self.size
+        new_y = self.y + dy * self.size
+
+        if 0 <= new_x < window_width - self.size and 0 <= new_y < window_height - self.size:
+            self.canvas.move(self.shape, dx * self.size, dy * self.size)
+
+        # Schedule the next wandering step
+        self.canvas.after(self.wander_interval, self.wander)
 
 
 class Island:
@@ -100,7 +114,7 @@ def create_island():
     if len(islands) < 10:
         new_island = Island(canvas)
         while check_collision(islands, new_island):
-            new_island = Island(canvas)  # Generate a new island until it doesn't collide
+            new_island = Island(canvas)
 
         new_island.draw()
         islands.append(new_island)
