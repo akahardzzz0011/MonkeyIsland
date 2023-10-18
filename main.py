@@ -32,7 +32,29 @@ class Monkey:
         self.y = y
         self.size = size
         self.canvas = canvas
-        self.wander_interval= 1000
+        self.wander_interval = 1000
+        self.shape = 0
+        self.island_death_timer_counter = 0
+        self.death_sound_flag = threading.Event()
+        self.death_sound_thread = threading.Thread(target=self.death_sound_timer)
+        self.death_type = ""
+        self.is_dead = False
+
+    def stop_death_thread(self):
+        self.death_sound_flag.set()
+        self.is_dead = True
+
+    def death_sound_timer(self):
+        while not self.death_sound_flag.is_set():
+            if self.death_type == "sea":
+                playsound("sounds/water_splash.wav")
+                time.sleep(5)
+                self.stop_death_thread()
+            if self.death_type == "land":
+                playsound("sounds/monkey_laugh.wav")
+                time.sleep(5)
+                self.stop_death_thread()
+
 
     def draw(self):
         self.shape = self.canvas.create_rectangle(
@@ -63,11 +85,12 @@ class Island:
         self.canvas = canvas
         self.sound_thread = threading.Thread(target=self.sound_timer)
         self.flag = threading.Event()
+        self.monkeys = []
 
     def draw(self):
         self.canvas.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill=self.color)
         self.generate_monkeys()
-        # self.sound_thread.start()
+        self.sound_thread.start()
 
     def stop_thread(self):
         self.flag.set()
@@ -78,15 +101,28 @@ class Island:
             playsound("sounds/monkey_noise.wav")
 
     def generate_monkeys(self):
-        monkeys = []
         for _ in range(10):
             small_square_width = random.randint(2, 2)
             small_square_x = random.randint(self.x, self.x + self.width - small_square_width)
             small_square_y = random.randint(self.y, self.y + self.height - small_square_width)
             monkey = Monkey(self.canvas, small_square_x, small_square_y, small_square_width)
             monkey.draw()
-            monkeys.append(monkey)
-        return monkeys
+            self.monkeys.append(monkey)
+        return self.monkeys
+
+    def is_monkey_in_island(self, monkey):
+        monkey_x1, monkey_y1, monkey_x2, monkey_y2 = self.canvas.coords(monkey.shape)
+        island_x1, island_y1, island_x2, island_y2 = self.x, self.y, self.x + self.width, self.y + self.height
+
+        if (
+            monkey_x1 >= island_x1 and
+            monkey_x2 <= island_x2 and
+            monkey_y1 >= island_y1 and
+            monkey_y2 <= island_y2
+        ):
+            return True
+        else:
+            return False
 
 
 def i_suppose_i_have_earned_so_much_points(amount_of_points):
@@ -108,6 +144,32 @@ def check_collision(islands, new_island):
         ):
             return True
     return False
+
+def one_percent_probability():
+    random_number = random.random()
+    if random_number <= 0.01:
+        return True
+    else:
+        return False
+
+
+def check_monkey_position():
+    for island in islands:
+        for monkey in island.monkeys:
+            if island.is_monkey_in_island(monkey):
+                monkey.island_death_timer_counter += 1
+                if monkey.island_death_timer_counter == 10:
+                    if one_percent_probability():
+                        monkey.death_type = "land"
+                        monkey.death_sound_thread.start()
+                    monkey.island_death_timer_counter = 0
+            else:
+                if one_percent_probability():
+                    monkey.death_type = "sea"
+                    monkey.death_sound_thread.start()
+            if monkey.is_dead:
+                island.monkeys.remove(monkey)
+    canvas.after(1000, check_monkey_position)
 
 
 def create_island():
@@ -138,6 +200,7 @@ button_new_island.grid(row=2, column=1)
 clear_button = tk.Button(ikkuna, text="Clear Islands", command=lambda: clear_islands())
 clear_button.grid(row=2, column=2)
 
+check_monkey_position()
 ikkuna.grid_rowconfigure(1, weight=1)
 ikkuna.grid_columnconfigure(0, weight=1)
 ikkuna.mainloop()
