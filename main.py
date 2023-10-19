@@ -28,7 +28,8 @@ islands = []
 
 
 class Monkey:
-    def __init__(self, canvas, x, y, size):
+    def __init__(self, canvas, island, x, y, size):
+        self.island = island
         self.x = x
         self.y = y
         self.size = size
@@ -40,6 +41,7 @@ class Monkey:
         self.death_sound_thread = threading.Thread(target=self.death_sound_timer)
         self.death_type = ""
         self.is_dead = False
+        self.is_swimming = False
 
     def stop_death_thread(self):
         self.death_sound_flag.set()
@@ -65,13 +67,27 @@ class Monkey:
     def wander(self):
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]  # Right, Left, Down, Up
         dx, dy = random.choice(directions)
-        new_x = self.x + dx * self.size
-        new_y = self.y + dy * self.size
 
-        if 0 <= new_x < window_width - self.size and 0 <= new_y < window_height - self.size:
-            self.canvas.move(self.shape, dx * self.size, dy * self.size)
+        if not self.is_swimming:
+            new_x = self.x + dx * self.size
+            new_y = self.y + dy * self.size
+
+            island_x1, island_y1, island_x2, island_y2 = self.get_island_boundary()
+
+            new_x = max(island_x1, min(new_x, island_x2 - self.size))
+            new_y = max(island_y1, min(new_y, island_y2 - self.size))
+
+            self.canvas.move(self.shape, new_x - self.x, new_y - self.y)
+            self.x, self.y = new_x, new_y
 
         self.canvas.after(self.wander_interval, self.wander)
+
+    def get_island_boundary(self):
+        island_x1 = self.island.x
+        island_y1 = self.island.y
+        island_x2 = island_x1 + self.island.width
+        island_y2 = island_y1 + self.island.height
+        return island_x1, island_y1, island_x2, island_y2
 
 
 class Island:
@@ -147,7 +163,7 @@ class Island:
             small_square_width = random.randint(2, 2)
             small_square_x = random.randint(self.x, self.x + self.width - small_square_width)
             small_square_y = random.randint(self.y, self.y + self.height - small_square_width)
-            monkey = Monkey(self.canvas, small_square_x, small_square_y, small_square_width)
+            monkey = Monkey(self.canvas, self, small_square_x, small_square_y, small_square_width)
             monkey.draw()
             self.monkeys.append(monkey)
         return self.monkeys
