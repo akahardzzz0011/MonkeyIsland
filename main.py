@@ -8,7 +8,8 @@ colormap = {
     "ocean_blue": "#0077B6",
     "grass_green": "#4CAF50",
     "monkey": "#8B4513",
-    "dock_color": "#8B4513"
+    "dock_color": "#8B4513",
+    "grass_green_aware": "#388E3C",
 }
 
 ikkuna = tk.Tk()
@@ -58,10 +59,19 @@ class Monkey:
         self.shape = self.canvas.create_rectangle(
             self.x, self.y, self.x + self.size, self.y + self.size, fill=colormap["monkey"]
         )
+        self.update()
+
+    def update(self):
         if not self.is_swimming:
             self.wander()
         if self.is_swimming:
             self.swim()
+        self.canvas.after(self.move_interval, self.update)
+
+    def start_swimming(self):
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]  # Right, Left, Down, Up
+        self.swimming_direction = random.choice(directions)
+        self.is_swimming = True
 
     def swim(self):
         dx, dy = self.swimming_direction
@@ -71,8 +81,6 @@ class Monkey:
 
         if 0 <= new_x < window_width - self.size and 0 <= new_y < window_height - self.size:
             self.canvas.move(self.shape, dx * self.size, dy * self.size)
-
-        self.canvas.after(self.move_interval, self.swim)
 
     def wander(self):
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]  # Right, Left, Down, Up
@@ -88,8 +96,6 @@ class Monkey:
 
         self.canvas.move(self.shape, new_x - self.x, new_y - self.y)
         self.x, self.y = new_x, new_y
-
-        self.canvas.after(self.move_interval, self.wander)
 
     def get_island_boundary(self):
         island_x1 = self.island.x
@@ -145,6 +151,7 @@ class Island:
         self.update_monkey_label()
         if self.is_aware:
             self.draw_docks()
+            self.start_monkey_swimming()
 
     def stop_thread(self):
         self.flag.set()
@@ -160,6 +167,13 @@ class Island:
             fill="black",
             font=("Arial", 12)
         )
+
+    def start_monkey_swimming(self):
+        for monkey in self.monkeys:
+            if not monkey.is_swimming:
+                monkey.start_swimming()
+                break
+        self.canvas.after(10000, self.start_monkey_swimming)
 
     def sound_timer(self):
         while not self.flag.is_set():
@@ -250,6 +264,7 @@ def create_island():
         new_island = Island(canvas)
         if len(islands) == 0:
             new_island.is_aware = True
+            new_island.color = colormap["grass_green_aware"]
         while check_collision(islands, new_island):
             new_island = Island(canvas)
 
