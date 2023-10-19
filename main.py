@@ -1,12 +1,7 @@
 import random
 import tkinter as tk
-# import winsound
 import time
-import matplotlib.pyplot as plt
 from playsound import playsound
-import numpy as np
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.colors import ListedColormap
 import threading
 
 colormap = {
@@ -34,7 +29,7 @@ class Monkey:
         self.y = y
         self.size = size
         self.canvas = canvas
-        self.wander_interval = 1000
+        self.move_interval = 1000
         self.shape = 0
         self.island_death_timer_counter = 0
         self.death_sound_flag = threading.Event()
@@ -42,6 +37,7 @@ class Monkey:
         self.death_type = ""
         self.is_dead = False
         self.is_swimming = False
+        self.swimming_direction = None
 
     def stop_death_thread(self):
         self.death_sound_flag.set()
@@ -62,25 +58,38 @@ class Monkey:
         self.shape = self.canvas.create_rectangle(
             self.x, self.y, self.x + self.size, self.y + self.size, fill=colormap["monkey"]
         )
-        self.wander()
+        if not self.is_swimming:
+            self.wander()
+        if self.is_swimming:
+            self.swim()
+
+    def swim(self):
+        dx, dy = self.swimming_direction
+
+        new_x = self.x + dx * self.size
+        new_y = self.y + dy * self.size
+
+        if 0 <= new_x < window_width - self.size and 0 <= new_y < window_height - self.size:
+            self.canvas.move(self.shape, dx * self.size, dy * self.size)
+
+        self.canvas.after(self.move_interval, self.swim)
 
     def wander(self):
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]  # Right, Left, Down, Up
         dx, dy = random.choice(directions)
 
-        if not self.is_swimming:
-            new_x = self.x + dx * self.size
-            new_y = self.y + dy * self.size
+        new_x = self.x + dx * self.size
+        new_y = self.y + dy * self.size
 
-            island_x1, island_y1, island_x2, island_y2 = self.get_island_boundary()
+        island_x1, island_y1, island_x2, island_y2 = self.get_island_boundary()
 
-            new_x = max(island_x1, min(new_x, island_x2 - self.size))
-            new_y = max(island_y1, min(new_y, island_y2 - self.size))
+        new_x = max(island_x1, min(new_x, island_x2 - self.size))
+        new_y = max(island_y1, min(new_y, island_y2 - self.size))
 
-            self.canvas.move(self.shape, new_x - self.x, new_y - self.y)
-            self.x, self.y = new_x, new_y
+        self.canvas.move(self.shape, new_x - self.x, new_y - self.y)
+        self.x, self.y = new_x, new_y
 
-        self.canvas.after(self.wander_interval, self.wander)
+        self.canvas.after(self.move_interval, self.wander)
 
     def get_island_boundary(self):
         island_x1 = self.island.x
@@ -107,7 +116,6 @@ class Island:
         self.monkey_label_amount = None
         self.monkeys = []
         self.is_aware = False
-
 
     def draw_docks(self):
         if self.is_aware:
