@@ -12,7 +12,8 @@ import threading
 colormap = {
     "ocean_blue": "#0077B6",
     "grass_green": "#4CAF50",
-    "monkey": "#8B4513"
+    "monkey": "#8B4513",
+    "dock_color": "#8B4513"
 }
 
 ikkuna = tk.Tk()
@@ -47,7 +48,7 @@ class Monkey:
     def death_sound_timer(self):
         while not self.death_sound_flag.is_set():
             if self.death_type == "sea":
-                playsound("sounds/water_splash.wav")
+                playsound("sounds/shark_drowned_monkey.wav")
                 time.sleep(5)
                 self.stop_death_thread()
             if self.death_type == "land":
@@ -89,6 +90,23 @@ class Island:
         self.flag = threading.Event()
         self.monkey_label_amount = None
         self.monkeys = []
+        self.is_aware = False
+
+
+    def draw_docks(self):
+        if self.is_aware:
+            dock_size = 15
+            # top, left, right, bottom
+            self.canvas.create_rectangle(self.x + dock_size, self.y - dock_size, self.x + dock_size*2, self.y,
+                                         fill=colormap["dock_color"])
+            self.canvas.create_rectangle(self.x - dock_size, self.y + dock_size, self.x, self.y + dock_size*2,
+                                         fill=colormap["dock_color"])
+            self.canvas.create_rectangle(self.x + self.width, self.y + dock_size,
+                                         self.x + self.width + dock_size, self.y + dock_size*2,
+                                         fill=colormap["dock_color"])
+
+            self.canvas.create_rectangle(self.x + dock_size*2, self.y + self.height, self.x + dock_size*3,
+                                         self.y + self.height + dock_size, fill=colormap["dock_color"])
 
     def draw(self):
         self.canvas.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill=self.color)
@@ -101,6 +119,8 @@ class Island:
         self.generate_monkeys()
         self.sound_thread.start()
         self.update_monkey_label()
+        if self.is_aware:
+            self.draw_docks()
 
     def stop_thread(self):
         self.flag.set()
@@ -204,6 +224,8 @@ def check_monkey_position():
 def create_island():
     if len(islands) < 10:
         new_island = Island(canvas)
+        if len(islands) == 0:
+            new_island.is_aware = True
         while check_collision(islands, new_island):
             new_island = Island(canvas)
 
