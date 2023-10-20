@@ -147,12 +147,17 @@ class Island:
             fill="black",
             font=("Arial", 12)
         )
-        self.generate_monkeys()
-        self.sound_thread.start()
+
+    def generate_island_components(self):
+        self.draw()
         self.update_monkey_label()
-        if self.is_aware:
-            self.draw_docks()
-            self.start_monkey_swimming()
+        self.sound_thread.start()
+        self.generate_monkeys()
+
+    def make_island_aware(self):
+        self.is_aware = True
+        self.draw_docks()
+        self.start_monkey_swimming()
 
     def stop_thread(self):
         self.flag.set()
@@ -288,12 +293,11 @@ def create_island():
     if len(islands) < 10:
         new_island = Island(canvas)
         if len(islands) == 0:
-            new_island.is_aware = True
-            new_island.color = colormap["grass_green_aware"]
+            new_island.make_island_aware()
         while check_collision(islands, new_island):
             new_island = Island(canvas)
 
-        new_island.draw()
+        new_island.generate_island_components()
         islands.append(new_island)
 
 
@@ -302,6 +306,7 @@ def clear_islands():
     for island in islands:
         island.stop_thread()
     islands.clear()
+    swimming_monkeys.clear()
     # i_suppose_i_have_earned_so_much_points(1)
 
 
