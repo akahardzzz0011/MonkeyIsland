@@ -245,6 +245,7 @@ def land_death_counter(monkey):
             canvas.delete(monkey.shape)
         monkey.island_death_timer_counter = 0
 
+
 def sea_death_counter(monkey):
     if one_percent_probability():
         monkey.death_type = "sea"
@@ -253,15 +254,25 @@ def sea_death_counter(monkey):
         canvas.delete(monkey.shape)
     # i_suppose_i_have_earned_so_much_points(2)
 
+
+def move_to_swimming_monkeys(monkeys):
+    global swimming_monkeys
+    for monkey in monkeys:
+        if monkey.is_swimming:
+            swimming_monkey = monkeys.pop(0)
+            swimming_monkeys.append(swimming_monkey)
+
+
 def check_monkey_position():
     for island in islands:
         island.monkeys = [monkey for monkey in island.monkeys if not monkey.is_dead]
+        move_to_swimming_monkeys(island.monkeys)
         island.update_monkey_label()
         for monkey in island.monkeys:
             if island.is_monkey_in_island(monkey):
                 land_death_counter(monkey)
-            else:
-                sea_death_counter(monkey)
+    for monkey in swimming_monkeys:
+        sea_death_counter(monkey)
 
     canvas.after(1000, check_monkey_position)
 
