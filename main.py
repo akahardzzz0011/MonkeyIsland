@@ -22,7 +22,7 @@ canvas.grid(row=1, column=0, columnspan=6)
 point_button = []
 islands = []
 swimming_monkeys = []
-
+main_interval_timer = 100  # 1000 is one second
 
 class Monkey:
     def __init__(self, canvas, island, x, y, size):
@@ -31,7 +31,7 @@ class Monkey:
         self.y = y
         self.size = size
         self.canvas = canvas
-        self.move_interval = 1000
+        self.move_interval = main_interval_timer
         self.shape = 0
         self.island_death_timer_counter = 0
         self.death_sound_flag = threading.Event()
@@ -179,7 +179,7 @@ class Island:
             if not monkey.is_swimming:
                 monkey.start_swimming()
                 break
-        self.canvas.after(10000, self.start_monkey_swimming)
+        self.canvas.after(main_interval_timer * 10, self.start_monkey_swimming)
 
     def sound_timer(self):
         while not self.flag.is_set():
@@ -278,6 +278,7 @@ def check_monkey_position():
         for monkey in island.monkeys:
             if island.is_monkey_in_island(monkey):
                 land_death_counter(monkey)
+
     counter = 0
     for monkey in swimming_monkeys:
         if sea_death_counter(monkey):
@@ -286,7 +287,22 @@ def check_monkey_position():
         else:
             counter += 1
 
-    canvas.after(1000, check_monkey_position)
+    canvas.after(main_interval_timer, check_monkey_position)
+
+
+def check_monkey_landed_on_island():
+    for island in islands:
+        counter = 0
+        for monkey in swimming_monkeys:
+            if island.is_monkey_in_island(monkey):
+                island.monkeys.append(monkey)
+                swimming_monkeys.pop(counter)
+                island.make_island_aware()
+                counter += 1
+            else:
+                counter += 1
+
+    canvas.after(main_interval_timer, check_monkey_landed_on_island)
 
 
 def create_island():
@@ -322,6 +338,7 @@ clear_button = tk.Button(ikkuna, text="Clear Islands", command=lambda: clear_isl
 clear_button.grid(row=2, column=2)
 
 check_monkey_position()
+check_monkey_landed_on_island()
 ikkuna.grid_rowconfigure(1, weight=1)
 ikkuna.grid_columnconfigure(0, weight=1)
 ikkuna.mainloop()
