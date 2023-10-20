@@ -21,6 +21,7 @@ canvas = tk.Canvas(ikkuna, width=window_width, height=window_height, bg=colormap
 canvas.grid(row=1, column=0, columnspan=6)
 point_button = []
 islands = []
+swimming_monkeys = []
 
 
 class Monkey:
@@ -234,20 +235,24 @@ def one_percent_probability():
         return False
 
 
+def land_death_counter(monkey):
+    monkey.island_death_timer_counter += 1
+    if monkey.island_death_timer_counter == 10:
+        if one_percent_probability():
+            monkey.death_type = "land"
+            monkey.death_sound_thread.start()
+            monkey.stop_death_thread()
+            canvas.delete(monkey.shape)
+        monkey.island_death_timer_counter = 0
+
+
 def check_monkey_position():
     for island in islands:
         island.monkeys = [monkey for monkey in island.monkeys if not monkey.is_dead]
         island.update_monkey_label()
         for monkey in island.monkeys:
             if island.is_monkey_in_island(monkey):
-                monkey.island_death_timer_counter += 1
-                if monkey.island_death_timer_counter == 10:
-                    if one_percent_probability():
-                        monkey.death_type = "land"
-                        monkey.death_sound_thread.start()
-                        monkey.stop_death_thread()
-                        canvas.delete(monkey.shape)
-                    monkey.island_death_timer_counter = 0
+                land_death_counter(monkey)
             else:
                 if one_percent_probability():
                     monkey.death_type = "sea"
