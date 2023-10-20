@@ -22,6 +22,7 @@ canvas.grid(row=1, column=0, columnspan=6)
 point_button = []
 islands = []
 swimming_monkeys = []
+dock_size = 15
 main_interval_timer = 100  # 1000 is one second
 
 class Monkey:
@@ -125,19 +126,17 @@ class Island:
         self.is_aware = False
 
     def draw_docks(self):
-        if self.is_aware:
-            dock_size = 15
-            # top, left, right, bottom
-            self.canvas.create_rectangle(self.x + dock_size, self.y - dock_size, self.x + dock_size*2, self.y,
-                                         fill=colormap["dock_color"])
-            self.canvas.create_rectangle(self.x - dock_size, self.y + dock_size, self.x, self.y + dock_size*2,
-                                         fill=colormap["dock_color"])
-            self.canvas.create_rectangle(self.x + self.width, self.y + dock_size,
-                                         self.x + self.width + dock_size, self.y + dock_size*2,
-                                         fill=colormap["dock_color"])
+        # top, left, right, bottom
+        self.canvas.create_rectangle(self.x + dock_size, self.y - dock_size, self.x + dock_size*2, self.y,
+                                     fill=colormap["dock_color"])
+        self.canvas.create_rectangle(self.x - dock_size, self.y + dock_size, self.x, self.y + dock_size*2,
+                                     fill=colormap["dock_color"])
+        self.canvas.create_rectangle(self.x + self.width, self.y + dock_size,
+                                     self.x + self.width + dock_size, self.y + dock_size*2,
+                                     fill=colormap["dock_color"])
 
-            self.canvas.create_rectangle(self.x + dock_size*2, self.y + self.height, self.x + dock_size*3,
-                                         self.y + self.height + dock_size, fill=colormap["dock_color"])
+        self.canvas.create_rectangle(self.x + dock_size*2, self.y + self.height, self.x + dock_size*3,
+                                     self.y + self.height + dock_size, fill=colormap["dock_color"])
 
     def draw(self):
         self.canvas.create_rectangle(self.x, self.y, self.x + self.width, self.y + self.height, fill=self.color)
