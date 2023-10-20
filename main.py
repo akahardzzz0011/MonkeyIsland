@@ -257,10 +257,10 @@ def sea_death_counter(monkey):
     # i_suppose_i_have_earned_so_much_points(2)
 
 
-def move_to_swimming_monkeys(monkeys):
+def move_to_swimming_monkeys(is_in_island, monkeys):
     global swimming_monkeys
     for monkey in monkeys:
-        if monkey.is_swimming:
+        if not is_in_island(monkey):
             swimming_monkey = monkeys.pop(0)
             swimming_monkeys.append(swimming_monkey)
 
@@ -268,7 +268,7 @@ def move_to_swimming_monkeys(monkeys):
 def check_monkey_position():
     for island in islands:
         island.monkeys = [monkey for monkey in island.monkeys if not monkey.is_dead]
-        move_to_swimming_monkeys(island.monkeys)
+        move_to_swimming_monkeys(island.is_monkey_in_island, island.monkeys)
         island.update_monkey_label()
         for monkey in island.monkeys:
             if island.is_monkey_in_island(monkey):
