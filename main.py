@@ -252,6 +252,8 @@ def sea_death_counter(monkey):
         monkey.death_sound_thread.start()
         monkey.stop_death_thread()
         canvas.delete(monkey.shape)
+        return True
+    return False
     # i_suppose_i_have_earned_so_much_points(2)
 
 
@@ -271,8 +273,13 @@ def check_monkey_position():
         for monkey in island.monkeys:
             if island.is_monkey_in_island(monkey):
                 land_death_counter(monkey)
+    counter = 0
     for monkey in swimming_monkeys:
-        sea_death_counter(monkey)
+        if sea_death_counter(monkey):
+            swimming_monkeys.pop(counter)
+            counter += 1
+        else:
+            counter += 1
 
     canvas.after(1000, check_monkey_position)
 
