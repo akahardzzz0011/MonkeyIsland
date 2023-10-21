@@ -25,6 +25,7 @@ swimming_monkeys = []
 dock_size = 15
 main_interval_timer = 100  # 1000 is one second
 
+
 class Monkey:
     def __init__(self, canvas, island, x, y, size):
         self.island = island
@@ -211,11 +212,13 @@ class Island:
 
 
 def i_suppose_i_have_earned_so_much_points(amount_of_points):
-    for i in range(5):
+    make_green = int(amount_of_points / 5)
+    for i in range(4):
         point_button[i].configure(bg='gray')
     time.sleep(1)
-    for i in range(amount_of_points):
+    for i in range(make_green):
         point_button[i].configure(bg='green')
+    for i in range(amount_of_points):
         playsound("sounds/point_earned.wav")
 
 
@@ -256,9 +259,9 @@ def sea_death_counter(monkey):
         monkey.death_sound_thread.start()
         monkey.stop_death_thread()
         canvas.delete(monkey.shape)
+        #i_suppose_i_have_earned_so_much_points(2)
         return True
     return False
-    # i_suppose_i_have_earned_so_much_points(2)
 
 
 def move_to_swimming_monkeys(is_in_island, monkeys):
@@ -322,11 +325,20 @@ def clear_islands():
         island.stop_thread()
     islands.clear()
     swimming_monkeys.clear()
-    # i_suppose_i_have_earned_so_much_points(1)
+    thread5_work()
 
 
-for i in range(5):
-    button_temp = tk.Button(ikkuna, text="Points: " + str(i + 1), padx=40)
+def thread5_work():
+    while not thread5_flag.is_set():
+        thread5.start()
+        thread5_flag.set()
+
+
+thread5 = threading.Thread(target=lambda: i_suppose_i_have_earned_so_much_points(20))
+thread5_flag = threading.Event()
+
+for i in range(4):
+    button_temp = tk.Button(ikkuna, text="Points: " + str((i + 1) * 5), padx=40)
     button_temp.grid(row=0, column=i + 1)
     point_button.append(button_temp)
 
