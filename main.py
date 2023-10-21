@@ -9,7 +9,6 @@ colormap = {
     "grass_green": "#4CAF50",
     "monkey": "#8B4513",
     "dock_color": "#8B4513",
-    "grass_green_aware": "#388E3C",
 }
 
 ikkuna = tk.Tk()
@@ -23,7 +22,7 @@ point_button = []
 islands = []
 swimming_monkeys = []
 dock_size = 15
-main_interval_timer = 100  # 1000 is one second
+main_interval_timer = 200  # 1000 is one second
 
 
 class Monkey:
@@ -259,7 +258,6 @@ def sea_death_counter(monkey):
         monkey.death_sound_thread.start()
         monkey.stop_death_thread()
         canvas.delete(monkey.shape)
-        #i_suppose_i_have_earned_so_much_points(2)
         return True
     return False
 
@@ -268,12 +266,20 @@ def move_to_swimming_monkeys(is_in_island, monkeys):
     global swimming_monkeys
     for monkey in monkeys:
         if not is_in_island(monkey):
+            thread10_work()
             swimming_monkey = monkeys.pop(0)
             swimming_monkeys.append(swimming_monkey)
 
 
 def check_monkey_position():
+    aware_islands = 0
     for island in islands:
+        if island.is_aware:
+            aware_islands += 1
+        if aware_islands > 1:
+            thread15_work()
+        if aware_islands > 2:
+            thread20_work()
         island.monkeys = [monkey for monkey in island.monkeys if not monkey.is_dead]
         move_to_swimming_monkeys(island.is_monkey_in_island, island.monkeys)
         island.update_monkey_label()
@@ -334,8 +340,32 @@ def thread5_work():
         thread5_flag.set()
 
 
-thread5 = threading.Thread(target=lambda: i_suppose_i_have_earned_so_much_points(20))
+def thread10_work():
+    while not thread10_flag.is_set():
+        thread10.start()
+        thread10_flag.set()
+
+
+def thread15_work():
+    while not thread15_flag.is_set():
+        thread15.start()
+        thread15_flag.set()
+
+
+def thread20_work():
+    while not thread20_flag.is_set():
+        thread20.start()
+        thread20_flag.set()
+
+
+thread5 = threading.Thread(target=lambda: i_suppose_i_have_earned_so_much_points(5))
 thread5_flag = threading.Event()
+thread10 = threading.Thread(target=lambda: i_suppose_i_have_earned_so_much_points(10))
+thread10_flag = threading.Event()
+thread15 = threading.Thread(target=lambda: i_suppose_i_have_earned_so_much_points(15))
+thread15_flag = threading.Event()
+thread20 = threading.Thread(target=lambda: i_suppose_i_have_earned_so_much_points(20))
+thread20_flag = threading.Event()
 
 for i in range(4):
     button_temp = tk.Button(ikkuna, text="Points: " + str((i + 1) * 5), padx=40)
